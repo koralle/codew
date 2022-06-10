@@ -1,0 +1,58 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - '*'
+      
+jobs:
+  release:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix-os }}
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: SetUp Rust
+        # See: https://github.com/actions-rs/toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          override: true
+          profile: minimal
+          components: clippy
+          
+      - name: Install cross-rs/cross
+        run: |
+          cargo install cross --force
+
+      - name: "[Debug] Build"
+        run: |
+          cargo build
+          
+      - name: Run Tests
+        run: |
+          make test
+          
+      - name: Run clippy
+        run: |
+          make clippy
+          
+      - name: "[Release] Build for Mac OS X"
+        if: matrix.os == 'macos-latest'
+        run: |
+          make release-for-macosx
+
+      - name: "[Release] Build for Windows"
+        if: matrix.os == 'windows-latest'
+        run: |
+          make release-for-windows
+          
+      - name: "[Release] Build for Linux"
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          make release-for-linux

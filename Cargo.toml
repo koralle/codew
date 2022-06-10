@@ -2,7 +2,22 @@
 name = "codw"
 version = "0.1.0"
 edition = "2021"
+exclude = [".github/*"]
+homepage = "https://github.com/koralle/codw"
+repository = "https://github.com/koralle/codw"
+readme = "README.md"
+license = "MIT"
+categories = [ "command-line-utilities" ]
+keywords = [
+    "vscode",
+    "extension",
+    "cli"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[profile.release]
+lto = true
+opt-level = "z"
