@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust-version: [nightly, stable, '1.60']
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.rust-version == 'nightly' }}
+    steps:
+        # See: https://github.com/actions/checkout
+      - uses: actions/checkout@v3
+      
+      - name: SetUp Rust
+        # See: https://github.com/actions-rs/toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+          default: true
+          override: true
+          profile: minimal
+          components: rustfmt, clippy
+          
+      - name: "[Debug] Build"
+        run: |
+          cargo build
+          
+      - name: Run Tests
+        run: |
+          make test
+          
+      - name: Run clippy
+        run: |
+          make clippy
+          
+      - name: "[Release] Build"
+        run: |
+          make build-release
